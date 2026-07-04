@@ -1,0 +1,541 @@
+
+<style>
+  :root { --game-radius: 12px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  #game-root {
+    font-family: var(--font-sans);
+    padding: 1.5rem 1rem;
+    max-width: 640px;
+    margin: 0 auto;
+    min-height: 500px;
+  }
+
+  .game-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+
+  .game-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .score-badge {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .score-val {
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .colors-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+
+  .color-card {
+    background: var(--surface-2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--game-radius);
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .color-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .color-swatch {
+    width: 100%;
+    height: 120px;
+    border-radius: 8px;
+    border: 0.5px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .color-hex {
+    font-size: 13px;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+    text-align: center;
+  }
+
+  .sliders-card {
+    background: var(--surface-2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--game-radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .slider-row {
+    display: grid;
+    grid-template-columns: 48px 1fr 40px;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .slider-label {
+    font-size: 13px;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  .label-r { background: #fee2e2; color: #991b1b; }
+  .label-g { background: #dcfce7; color: #166534; }
+  .label-b { background: #dbeafe; color: #1e40af; }
+
+  .slider-val {
+    font-size: 13px;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+    text-align: right;
+    min-width: 32px;
+  }
+
+  input[type="range"].r-slider { accent-color: #ef4444; }
+  input[type="range"].g-slider { accent-color: #22c55e; }
+  input[type="range"].b-slider { accent-color: #3b82f6; }
+
+  .btn-primary {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: var(--game-radius);
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    border: none;
+    background: var(--fill-accent);
+    color: var(--on-accent);
+  }
+
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-secondary {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    font-size: 14px;
+    border-radius: var(--game-radius);
+    cursor: pointer;
+    transition: background 0.12s, transform 0.1s;
+    border: 0.5px solid var(--border-strong);
+    background: transparent;
+    color: var(--text-primary);
+  }
+
+  .btn-secondary:hover { background: var(--surface-1); }
+  .btn-secondary:active { transform: scale(0.98); }
+
+  .result-overlay {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 1.5rem 1.25rem;
+    background: var(--surface-2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--game-radius);
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .result-overlay.visible { display: flex; }
+
+  .result-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+  }
+
+  .icon-success { background: var(--bg-success); }
+  .icon-fail { background: var(--bg-warning); }
+
+  .result-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .result-swatches {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .swatch-mini {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    border: 0.5px solid var(--border);
+  }
+
+  .swatch-arrow {
+    font-size: 18px;
+    color: var(--text-muted);
+  }
+
+  .result-msg {
+    font-size: 14px;
+    color: var(--text-secondary);
+    max-width: 280px;
+  }
+
+  .result-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .diff-bar-wrap {
+    width: 100%;
+    height: 8px;
+    background: var(--surface-1);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .diff-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.5s ease;
+  }
+
+  .diff-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .hint-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hint-pill {
+    font-size: 12px;
+    font-family: var(--font-mono);
+    padding: 3px 10px;
+    border-radius: 100px;
+    background: var(--surface-1);
+    border: 0.5px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  .attempts-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .attempt-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    transition: background 0.2s;
+  }
+
+  .dot-win { background: var(--fill-success); border-color: var(--border-success); }
+  .dot-fail { background: var(--fill-danger); border-color: var(--border-danger); }
+</style>
+
+<div id="game-root" role="main">
+  <h2 class="sr-only">Acerte a Cor – Desafio RGB</h2>
+
+  <div class="game-header">
+    <span class="game-title">Acerte a Cor</span>
+    <div class="score-badge">
+      <span>Fase <span class="score-val" id="round-num">1</span></span>
+      <span>Pontos <span class="score-val" id="score-num">0</span></span>
+    </div>
+  </div>
+
+  <div class="attempts-row" id="attempts-row" style="margin-bottom: 1rem;"></div>
+
+  <div class="colors-row">
+    <div class="color-card">
+      <span class="color-label">Cor alvo</span>
+      <div class="color-swatch" id="target-swatch"></div>
+      <div class="color-hex" id="target-hex" style="visibility: hidden;">—</div>
+    </div>
+    <div class="color-card">
+      <span class="color-label">Sua cor</span>
+      <div class="color-swatch" id="player-swatch"></div>
+      <div class="color-hex" id="player-hex">rgb(128, 128, 128)</div>
+    </div>
+  </div>
+
+  <div class="sliders-card">
+    <div class="slider-row">
+      <span class="slider-label label-r">Red</span>
+      <input type="range" class="r-slider" id="sl-r" min="0" max="255" value="128" step="1">
+      <span class="slider-val" id="val-r">128</span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-label label-g">Green</span>
+      <input type="range" class="g-slider" id="sl-g" min="0" max="255" value="128" step="1">
+      <span class="slider-val" id="val-g">128</span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-label label-b">Blue</span>
+      <input type="range" class="b-slider" id="sl-b" min="0" max="255" value="128" step="1">
+      <span class="slider-val" id="val-b">128</span>
+    </div>
+  </div>
+
+  <button class="btn-primary" id="check-btn" onclick="checkColor()">Verificar cor</button>
+
+  <div class="result-overlay" id="result-overlay" style="margin-top: 1rem;">
+    <div class="result-icon" id="result-icon"></div>
+    <div class="result-title" id="result-title"></div>
+    <div class="result-swatches">
+      <div>
+        <div class="swatch-mini" id="res-target"></div>
+        <div style="font-size:11px; color: var(--text-muted); margin-top:4px; text-align:center">Alvo</div>
+      </div>
+      <span class="swatch-arrow"><i class="ti ti-arrows-exchange" aria-hidden="true"></i></span>
+      <div>
+        <div class="swatch-mini" id="res-player"></div>
+        <div style="font-size:11px; color: var(--text-muted); margin-top:4px; text-align:center">Sua cor</div>
+      </div>
+    </div>
+    <div style="width: 100%;">
+      <div class="diff-label">
+        <span>Precisão</span>
+        <span id="accuracy-pct">—</span>
+      </div>
+      <div style="margin-top: 4px;" class="diff-bar-wrap">
+        <div class="diff-bar-fill" id="diff-bar" style="width: 0%; background: var(--fill-success);"></div>
+      </div>
+    </div>
+    <div class="result-msg" id="result-msg"></div>
+    <div class="hint-row" id="hint-row" style="display:none;"></div>
+    <div class="result-actions" id="result-actions"></div>
+  </div>
+</div>
+
+<script>
+  const TOLERANCE_WIN = 15;
+  const TOLERANCE_CLOSE = 40;
+  const MAX_ROUNDS = 7;
+
+  let targetR, targetG, targetB;
+  let round = 1;
+  let score = 0;
+  let attemptsHistory = [];
+  let checked = false;
+
+  function rand255() { return Math.floor(Math.random() * 256); }
+
+  function toHex(v) { return v.toString(16).padStart(2, '0').toUpperCase(); }
+
+  function newRound() {
+    targetR = rand255();
+    targetG = rand255();
+    targetB = rand255();
+    checked = false;
+
+    document.getElementById('sl-r').value = 128;
+    document.getElementById('sl-g').value = 128;
+    document.getElementById('sl-b').value = 128;
+    updateSliders();
+
+    document.getElementById('target-swatch').style.background = `rgb(${targetR},${targetG},${targetB})`;
+    document.getElementById('target-hex').style.visibility = 'hidden';
+    document.getElementById('target-hex').textContent = `#${toHex(targetR)}${toHex(targetG)}${toHex(targetB)}`;
+
+    document.getElementById('result-overlay').classList.remove('visible');
+    document.getElementById('check-btn').style.display = 'block';
+    document.getElementById('round-num').textContent = round;
+    document.getElementById('score-num').textContent = score;
+
+    renderDots();
+  }
+
+  function renderDots() {
+    const row = document.getElementById('attempts-row');
+    row.innerHTML = '';
+    for (let i = 0; i < MAX_ROUNDS; i++) {
+      const d = document.createElement('div');
+      d.className = 'attempt-dot';
+      if (attemptsHistory[i] === 'win') d.classList.add('dot-win');
+      else if (attemptsHistory[i] === 'fail') d.classList.add('dot-fail');
+      row.appendChild(d);
+    }
+  }
+
+  function updateSliders() {
+    const r = +document.getElementById('sl-r').value;
+    const g = +document.getElementById('sl-g').value;
+    const b = +document.getElementById('sl-b').value;
+    document.getElementById('val-r').textContent = r;
+    document.getElementById('val-g').textContent = g;
+    document.getElementById('val-b').textContent = b;
+    document.getElementById('player-swatch').style.background = `rgb(${r},${g},${b})`;
+    document.getElementById('player-hex').textContent = `rgb(${r}, ${g}, ${b})`;
+  }
+
+  ['sl-r','sl-g','sl-b'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateSliders);
+  });
+
+  function colorDistance(r1,g1,b1,r2,g2,b2) {
+    return Math.sqrt((r1-r2)**2 + (g1-g2)**2 + (b1-b2)**2);
+  }
+
+  function checkColor() {
+    if (checked) return;
+    checked = true;
+
+    const pr = +document.getElementById('sl-r').value;
+    const pg = +document.getElementById('sl-g').value;
+    const pb = +document.getElementById('sl-b').value;
+
+    const dist = colorDistance(pr, pg, pb, targetR, targetG, targetB);
+    const maxDist = Math.sqrt(3 * 255**2);
+    const accuracy = Math.round((1 - dist / maxDist) * 100);
+
+    document.getElementById('target-hex').style.visibility = 'visible';
+
+    const overlay = document.getElementById('result-overlay');
+    overlay.classList.add('visible');
+    document.getElementById('check-btn').style.display = 'none';
+
+    document.getElementById('res-target').style.background = `rgb(${targetR},${targetG},${targetB})`;
+    document.getElementById('res-player').style.background = `rgb(${pr},${pg},${pb})`;
+    document.getElementById('accuracy-pct').textContent = accuracy + '%';
+
+    const bar = document.getElementById('diff-bar');
+    setTimeout(() => { bar.style.width = accuracy + '%'; }, 50);
+
+    const icon = document.getElementById('result-icon');
+    const title = document.getElementById('result-title');
+    const msg = document.getElementById('result-msg');
+    const hintRow = document.getElementById('hint-row');
+    const actions = document.getElementById('result-actions');
+
+    let won = dist <= TOLERANCE_WIN;
+    let close = dist <= TOLERANCE_CLOSE;
+
+    if (won) {
+      const pts = Math.round(100 + Math.max(0, (TOLERANCE_WIN - dist) * 5));
+      score += pts;
+      attemptsHistory.push('win');
+      icon.className = 'result-icon icon-success';
+      icon.innerHTML = '<i class="ti ti-check" style="font-size:28px; color: var(--text-success);" aria-hidden="true"></i>';
+      title.textContent = 'Parabéns! Você acertou!';
+      bar.style.background = 'var(--fill-success)';
+      msg.textContent = `Distância de ${Math.round(dist)} pontos. +${pts} pontos adicionados!`;
+      hintRow.style.display = 'none';
+    } else {
+      attemptsHistory.push('fail');
+      icon.className = 'result-icon icon-fail';
+      icon.innerHTML = '<i class="ti ti-alert-triangle" style="font-size:28px; color: var(--text-warning);" aria-hidden="true"></i>';
+      title.textContent = close ? 'Quase lá!' : 'Não foi dessa vez';
+      bar.style.background = dist <= 80 ? 'var(--fill-warning)' : 'var(--fill-danger)';
+      msg.textContent = `Distância de ${Math.round(dist)} pontos. A cor alvo era rgb(${targetR}, ${targetG}, ${targetB}).`;
+      hintRow.style.display = 'flex';
+      const diffs = [
+        { label: `R: ${pr} → ${targetR}`, delta: targetR - pr },
+        { label: `G: ${pg} → ${targetG}`, delta: targetG - pg },
+        { label: `B: ${pb} → ${targetB}`, delta: targetB - pb },
+      ];
+      hintRow.innerHTML = diffs.map(d => {
+        const arrow = d.delta > 0 ? '↑' : d.delta < 0 ? '↓' : '✓';
+        return `<span class="hint-pill">${arrow} ${d.label}</span>`;
+      }).join('');
+    }
+
+    actions.innerHTML = '';
+    document.getElementById('score-num').textContent = score;
+    renderDots();
+
+    if (round < MAX_ROUNDS) {
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'btn-secondary';
+      nextBtn.textContent = won ? 'Próxima cor' : 'Próxima cor';
+      nextBtn.onclick = () => { round++; newRound(); };
+      actions.appendChild(nextBtn);
+    } else {
+      const endBtn = document.createElement('button');
+      endBtn.className = 'btn-primary';
+      endBtn.style.flex = '1';
+      endBtn.textContent = 'Ver resultado final';
+      endBtn.onclick = showFinal;
+      actions.appendChild(endBtn);
+    }
+
+    if (!won) {
+      const retryBtn = document.createElement('button');
+      retryBtn.className = 'btn-secondary';
+      retryBtn.textContent = 'Tentar novamente';
+      retryBtn.onclick = () => {
+        attemptsHistory.pop();
+        checked = false;
+        overlay.classList.remove('visible');
+        document.getElementById('check-btn').style.display = 'block';
+        document.getElementById('target-hex').style.visibility = 'hidden';
+        renderDots();
+      };
+      actions.prepend(retryBtn);
+    }
+  }
+
+  function showFinal() {
+    const wins = attemptsHistory.filter(a => a === 'win').length;
+    const overlay = document.getElementById('result-overlay');
+    overlay.innerHTML = `
+      <div class="result-icon ${wins >= 5 ? 'icon-success' : 'icon-fail'}" style="width:64px;height:64px;font-size:32px;">
+        ${wins >= 5
+          ? '<i class="ti ti-trophy" style="font-size:32px; color: var(--text-success);" aria-hidden="true"></i>'
+          : '<i class="ti ti-mood-happy" style="font-size:32px; color: var(--text-warning);" aria-hidden="true"></i>'}
+      </div>
+      <div class="result-title">Fim de jogo!</div>
+      <div style="font-size:28px; font-weight:500; color: var(--text-primary);">${score} pts</div>
+      <div class="result-msg">${wins} de ${MAX_ROUNDS} cores acertadas. ${wins >= 5 ? 'Excelente trabalho!' : 'Continue praticando!'}</div>
+      <button class="btn-primary" onclick="restartGame()">Jogar novamente</button>
+    `;
+  }
+
+  function restartGame() {
+    round = 1;
+    score = 0;
+    attemptsHistory = [];
+    newRound();
+  }
+
+  newRound();
+</script>
